@@ -1,0 +1,61 @@
+	게임 분석
+보이지 않는 보물을 찾아나감 -> 보이지 않는 열쇠를 찾아 보물을 발견함
+
+	새로운 소스코드
+display_main_menu
+print_char
+print_title
+MENU_LIST 에넘 선언
+display_play
+display_store
+BaseInfo구조체 선언(MENU_LIST저장) - 백엔드 정보위함
+change_main_menu
+BaseCharacter구조체 선언
+MapInfo 구조체 선언
+LAND_TYPE 에넘 선언
+land 구조체 선언
+A*알고리즘(랜덤으로 벽 생성될 때 열쇠, 입구, 출구 막히는곳 없는지) a->b지점으로 가는 길 있는지 체크
+initialize_land
+make_map
+make_wall
+follow_AStar_route 
+display_description
+initialize_base_character
+clamp 정의
+display_fail
+mission_fail
+play_game
+async_display_and_input
+Monster구조체 선언
+check_monster(해당위치에 몬스터 있는지 판별, 있으면 좌표 리턴 아니면 -1)
+set_spawn_pos (몬스터 스폰위치 지정)
+take_damage
+PlayerCharacter구조체 선언
+item구조체 선언
+itemtype열거형
+
+	플레이 외 코드관리
+소스파일의 순환종속을 피하기 위해 선언부 헤더파일만들어 관리(헤더부분이 서로 참조하면 오류)
+직관적이지 않은 변수명 수정
+자주 사용할것 같은 함수는 파일을 따로 관리
+const *를 함수 파라미터에 활용해 불필요 메모리 복사x, 수정불가
+함수파라미터에 포인터 선언시 함수 초반 항상 널체크
+우선순위 큐
+매크로
+오버로딩
+쓰레드를 사용한 비동기 함수 사용
+상속
+깊은복사
+	아쉬운점
+랜덤성 부족, 긴장감을 부여하는 게임요소 부족, 보상
+
+
+	게임플레이
+UI : 메인메뉴, 상점
+
+플레이 : /벽만들기/, /몬스터 만들기/(/잡으면 코인줌/), /체력 만들기/, A*알고리즘, 스테이지 만들기, 
+	/아이템 만들기(체력 물약, 자동 열쇠찾기, 최대체력 증가)/, 시간제한(시간을 책정하고 있긴함)
+
+UI의 이동관계 
+main_UI(change_main_menu -> display_main_menu(y | n)->display_rule->game_control(방향키, display_des
+cription,display_map) -> (win | lose) game_control(nextstage) |  ;)
