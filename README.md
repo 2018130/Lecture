@@ -13,4 +13,4 @@
 위부터 순서대로 chart.js 차트내용 : 최근 전국 주택 매매가격 동향,  
 eChart 차트내용 : 집에있는 옷 가지수,  
  D3 차트내용 : 치킨 브랜드 가맹점별 매출액 순위 입니다  
-[html파일](https://github.com/2018130/Lecture/blob/main/index.html)  
+[html파일](https://github.com/2018130/Lecture/tree/main/Game/UseChartsWithJS-main)
