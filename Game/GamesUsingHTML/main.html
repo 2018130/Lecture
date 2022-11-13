@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        #background {
+            cursor: crosshair;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="score" style="font-size: 40px;"></div>
+    <canvas id="background" class="main" width="1200" height="600" style="margin-left: 20px; margin-top: 50px;"><canvas>
+
+            <script>
+                //돔 오브젝트 저장
+                const canvas = document.getElementById("background");
+                const ctx = canvas.getContext("2d");
+                const scoreBoard = document.getElementById("score");
+
+                const imageElem = new Image();
+                imageElem.src = "backgroundImage.JPEG";
+
+                const targetImg = new Image();
+                targetImg.src = "mosquitoImage.JPEG";
+
+                let mainPanelPos = [300, 100, 600, 200];
+                let startButtonPos = [200, 400, 500, 500];
+                let exitButtonPos = [700, 400, 1000, 500];
+                let difficultyButtonPos = [[400, 100, 600, 200],
+                [400, 300, 600, 400],
+                [400, 500, 600, 600]];
+
+                let targetPosAndMakeTime = []; //x, y, makeTime, liveTime
+                let targetGenSpeed = [500, 1000]; //min, max
+                let targetLiveTime = [1000, 2000]; //min, max
+                let lastSpawnTime = new Date().getTime();
+                
+                let gamePlayinterval;
+                const maxTarget = 10;
+                let targetCount = 0;
+                let catchedCount = 0;
+
+
+                window.addEventListener('load', MainMenu);
+
+                //메인메뉴 그려지는 코드
+                function MainMenu() {
+                    ctx.clearRect(0, 0, 1200, 600)
+                    ctx.strokeRect(0, 0, 1200, 600);
+
+                    DrawSquareAndText(mainPanelPos[0], mainPanelPos[1], mainPanelPos[2], mainPanelPos[3], '모기 잡기');
+                    DrawSquareAndText(startButtonPos[0], startButtonPos[1],
+                        startButtonPos[2] - startButtonPos[0], startButtonPos[3] - startButtonPos[1], '게임 시작');
+                    DrawSquareAndText(exitButtonPos[0], exitButtonPos[1],
+                        exitButtonPos[2] - exitButtonPos[0], exitButtonPos[3] - exitButtonPos[1], '종료하기');
+                }
+
+                //난이도메뉴 그려지는 코드
+                function DifficultyMenu() {
+                    ctx.clearRect(0, 0, 1200, 600)
+                    ctx.strokeRect(0, 0, 1200, 600);
+
+                    DrawSquareAndText(difficultyButtonPos[0][0], difficultyButtonPos[0][1],
+                        difficultyButtonPos[0][2] - difficultyButtonPos[0][0], difficultyButtonPos[0][3] - difficultyButtonPos[0][1], '어려움');
+                    DrawSquareAndText(difficultyButtonPos[1][0], difficultyButtonPos[1][1],
+                        difficultyButtonPos[1][2] - difficultyButtonPos[1][0], difficultyButtonPos[1][3] - difficultyButtonPos[1][1], '보통');
+                    DrawSquareAndText(difficultyButtonPos[2][0], difficultyButtonPos[2][1],
+                        difficultyButtonPos[2][2] - difficultyButtonPos[2][0], difficultyButtonPos[2][3] - difficultyButtonPos[2][1], '쉬움');
+                }
+
+                //게임화면 그려지는 코드
+                function GamePlay() {
+                    ctx.clearRect(0, 0, 1200, 600)
+
+                    gamePlayinterval = setInterval(DrawGameScreen, 300);
+                }
+
+                function DrawGameScreen() {
+                    if (targetCount >= maxTarget) {
+                        clearInterval(gamePlayinterval);
+                        canvas.classList.remove('game');
+                        canvas.classList.add('endGame');
+
+                        EndGame()
+                        return;
+                    }
+                    ctx.drawImage(imageElem, 0, 0, canvas.offsetWidth, canvas.offsetHeight);
+
+                    for(let i = 0; i < targetPosAndMakeTime.length; i++){
+                        ctx.drawImage(targetImg, targetPosAndMakeTime[0], targetPosAndMakeTime[1], 30, 30);
+
+                        //모기 삭제 코드
+                        if(targetPosAndMakeTime[i][2].getTime() + targetPosAndMakeTime[i][3] <= new Date().getTime()){
+                            targetPosAndMakeTime.slice(i, 1);
+                            continue;
+                        }
+
+                        ctx.drawImage(targetImg, targetPosAndMakeTime[i][0], targetPosAndMakeTime[i][1], 30, 30);
+                    }
+
+                    let targetGenSpeedTime = Math.floor(Math.random() * (targetGenSpeed[1] - targetGenSpeed[0])) + targetGenSpeed[0];
+                    //새 모기 생성
+                    if (new Date() - lastSpawnTime >= targetGenSpeedTime) {
+                        let tmpX = Math.floor(Math.random() * 1140) + 30;
+                        let tmpY = Math.floor(Math.random() * 540) + 30;
+                        let tmpLiveTime = Math.floor(Math.random() * (targetLiveTime[1] - targetLiveTime[0])) + targetLiveTime[0];
+
+                        targetPosAndMakeTime.push([tmpX, tmpY, new Date(), tmpLiveTime])
+                        lastSpawnTime = new Date();
+
+                        targetCount++;
+                    }
+
+                    scoreBoard.textContent = targetCount + " / " + maxTarget + "잡은 모기 수 : " + catchedCount;
+                }
+
+                //게임 종료시 나타날 패널
+                function EndGame(){
+                    ctx.clearRect(0, 0, 1200, 600)
+                    ctx.strokeRect(0, 0, 1200, 600);
+                    scoreBoard.textContent = "당신이 잡은 모기 수는(총마리수) " + catchedCount +"("+maxTarget+")마리 입니다.";
+                    DrawSquareAndText(mainPanelPos[0], mainPanelPos[1], mainPanelPos[2], mainPanelPos[3], '메인 메뉴');
+                }
+
+                //윈도우 창 종료
+                function Exit(){
+                    self.close();
+                }
+                function DrawSquareAndText(x, y, width, height, text) {
+                    ctx.fillStyle = 'black';
+                    ctx.font = '48px serif';
+                    ctx.textAlign = "center"
+                    ctx.strokeRect(x, y, width, height);
+                    ctx.fillText(text, x + (width - text.length * ctx.font.length) / 2, y + height / 2);
+                }
+
+                function IsInTheBlock(x, y, blockPos) {
+                    if (blockPos[0] <= x && blockPos[2] >= x
+                        && blockPos[1] <= y && blockPos[3] >= y) return true;
+                    return false;
+                }
+
+                function ResetGameObject(){
+                    targetPosAndMakeTime = [];
+                    targetCount = 0;
+                    catchedCount = 0;
+                    scoreBoard.textContent = "";
+                }
+                canvas.addEventListener('click', function () {
+                    const x = event.clientX - ctx.canvas.offsetLeft;
+                    const y = event.clientY - ctx.canvas.offsetTop;
+                    if (canvas.classList.contains("main")) {
+                        if (IsInTheBlock(x, y, startButtonPos)) {
+                            canvas.classList.remove('main');
+                            canvas.classList.add('difficulty');
+
+                            DifficultyMenu();
+                        }else if(IsInTheBlock(x, y, exitButtonPos)){
+                            Exit();
+                        }
+                    } else if (canvas.classList.contains("difficulty")) {
+                        //난이도 설정중
+                        if (IsInTheBlock(x, y, difficultyButtonPos[0])) {
+                            targetGenSpeedTime = [500, 1000];
+                            targetLiveTime = [500, 1000];
+                        } else if (IsInTheBlock(x, y, difficultyButtonPos[1])) {
+                            targetGenSpeedTime = [1000, 1500];
+                            targetLiveTime = [1000, 1500];
+                        } else if (IsInTheBlock(x, y, difficultyButtonPos[2])) {
+                            targetGenSpeedTime = [1500, 2000];
+                            targetLiveTime = [1500, 2000];
+                        } else return;
+
+                        canvas.classList.remove('difficulty');
+                        canvas.classList.add('game');
+
+                        GamePlay();
+                    }else if(canvas.classList.contains("game")){
+                        //모기 잡는중
+                        if(targetCount < maxTarget){
+                            for(let i = 0; i < targetPosAndMakeTime.length; i++){
+                                if(IsInTheBlock(x, y, [targetPosAndMakeTime[i][0], targetPosAndMakeTime[i][1], targetPosAndMakeTime[i][0] + 30, targetPosAndMakeTime[i][1] + 30])){
+                                    catchedCount++;
+                                    break;
+                                }
+                            }
+                        }
+                    }else if(canvas.classList.contains("endGame")){
+                        if(IsInTheBlock(x, y, mainPanelPos)){
+                            canvas.classList.remove('endGame');
+                            canvas.classList.add('main');
+                            MainMenu();
+                            ResetGameObject();
+                        }
+                    }
+                })
+            </script>
+</body>
+
+</html>
